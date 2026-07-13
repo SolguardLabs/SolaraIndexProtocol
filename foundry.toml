@@ -1,0 +1,37 @@
+[profile.default]
+src = "src"
+test = "test"
+script = "script"
+out = "out"
+cache_path = "cache"
+libs = ["lib"]
+solc_version = "0.8.24"
+evm_version = "paris"
+optimizer = true
+optimizer_runs = 1_000
+bytecode_hash = "none"
+cbor_metadata = false
+verbosity = 2
+
+[profile.default.fuzz]
+runs = 512
+max_test_rejects = 65_536
+
+[profile.default.invariant]
+runs = 128
+depth = 64
+fail_on_revert = false
+
+[profile.ci]
+fuzz = { runs = 2_000 }
+invariant = { runs = 256, depth = 96, fail_on_revert = false }
+
+[fmt]
+line_length = 100
+tab_width = 4
+bracket_spacing = true
+int_types = "long"
+quote_style = "double"
+number_underscore = "thousands"
+multiline_func_header = "params_first"
+sort_imports = true
