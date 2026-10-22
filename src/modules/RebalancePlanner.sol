@@ -3,7 +3,6 @@ pragma solidity 0.8.24;
 
 import { ComponentRegistry } from "../core/ComponentRegistry.sol";
 import { IERC20 } from "../interfaces/IERC20.sol";
-import { ISolaraIndexProtocol } from "../interfaces/ISolaraIndexProtocol.sol";
 import { FixedPointMath } from "../libraries/FixedPointMath.sol";
 import { IndexMath } from "../libraries/IndexMath.sol";
 import { WeightMath } from "../libraries/WeightMath.sol";
@@ -20,6 +19,7 @@ contract RebalancePlanner {
     address public immutable vault;
 
     error InvalidTargetSet();
+    error InvalidSlippage(uint16 basisPoints);
 
     constructor(
         ComponentRegistry initialRegistry,
@@ -123,15 +123,16 @@ contract RebalancePlanner {
         }
     }
 
-    function quoteRedeemDifference(
+    function executionBounds(
         address asset,
-        uint256 shares
-    ) external view returns (uint256 fairAmount, uint256 rebalanceAmount, uint256 difference) {
-        ISolaraIndexProtocol protocol = ISolaraIndexProtocol(vault);
-        fairAmount = protocol.previewRedeem(shares).withdrawals[0].amount;
-        rebalanceAmount = protocol.previewRedeem(shares).withdrawals[0].amount;
-        if (asset == address(0)) return (fairAmount, rebalanceAmount, 0);
-        if (rebalanceAmount >= fairAmount) difference = rebalanceAmount - fairAmount;
-        else difference = fairAmount - rebalanceAmount;
+        uint256 valueDelta,
+        uint16 slippageBps
+    ) external view returns (uint256 nominal, uint256 minimumReceive, uint256 maximumSpend) {
+        if (slippageBps > BPS) revert InvalidSlippage(slippageBps);
+        Component memory component = registry.getComponent(asset);
+        uint256 price = oracle.getPrice(asset);
+        nominal = IndexMath.amountForValue(valueDelta, component.decimals, price);
+        minimumReceive = FixedPointMath.mulDiv(nominal, BPS - slippageBps, BPS);
+        maximumSpend = FixedPointMath.mulDivUp(nominal, BPS + slippageBps, BPS);
     }
 }

@@ -2,7 +2,7 @@
 pragma solidity 0.8.24;
 
 /// @title ProtocolAccess
-/// @notice Small role based access controller tailored for the Solara lab.
+/// @notice Role-based access controller for Solara protocol components.
 contract ProtocolAccess {
     bytes32 public constant DEFAULT_ADMIN_ROLE = 0x00;
     bytes32 public constant CONFIGURATOR_ROLE = keccak256("CONFIGURATOR_ROLE");
