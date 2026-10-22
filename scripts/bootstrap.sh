@@ -23,4 +23,4 @@ resolve_forge() {
   exit 127
 }
 
-"$(resolve_forge)" install --no-git --shallow foundry-rs/forge-std
+"$(resolve_forge)" install --no-git --shallow foundry-rs/forge-std@v1.9.6

@@ -6,6 +6,17 @@ del NAV y la correcta ejecución de rebalanceos. Este documento describe el
 alcance de revisión, el modelo de amenazas, las expectativas de reporte y los
 controles mínimos para evaluar cambios en el protocolo.
 
+```mermaid
+flowchart TD
+    S[Solicitud de operación] --> R{Rol o titular válido}
+    R -->|No| X[Rechazo]
+    R -->|Sí| P{Precios, pesos y límites vigentes}
+    P -->|No| X
+    P -->|Sí| Q[Cotización]
+    Q --> L[Liquidación y eventos]
+    L --> M[Monitoreo de NAV e inventario]
+```
+
 ## Alcance
 
 La revisión de seguridad debe centrarse en los contratos, pruebas y scripts de
@@ -88,10 +99,10 @@ forge build
 forge test -vvv
 ```
 
-En PowerShell:
+Con Bash:
 
-```powershell
-powershell -ExecutionPolicy Bypass -File ./scripts/tests.ps1
+```bash
+bash scripts/tests.sh
 ```
 
 Si el hallazgo depende de una condición concreta, adjunta también el comando
@@ -107,8 +118,7 @@ Los cambios deben preservar las invariantes centrales del índice:
 
 - cada `SINDEX` representa una cuota coherente del portfolio;
 - mint y redeem conservan proporcionalidad bajo las reglas configuradas;
-- los rebalanceos no permiten extraer componentes por encima de la cuota
-  económica correspondiente;
+- los cambios programados conservan trazabilidad de parámetros e inventario;
 - los precios usados para NAV, límites y salidas respetan heartbeat y rangos
   configurados;
 - los permisos administrativos permanecen aislados de rutas públicas de valor;

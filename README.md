@@ -12,6 +12,19 @@ El diseño separa custodia, registro de componentes, cálculo de pesos, oráculo
 vistas de reporting y controles operativos para mantener una superficie modular
 y verificable.
 
+```mermaid
+flowchart LR
+    U[Integrador] -->|previewMint · mint · redeem| V[Vault SINDEX]
+    V --> R[Registro de componentes]
+    V --> O[Oráculo de precios]
+    V --> T[Token SINDEX]
+    V --> I[Inventario ERC-20]
+    P[RebalancePlanner] -. consulta .-> V
+    P -. pesos y precios .-> R
+    P -. valoración .-> O
+    C[Circuit breaker] -. límites .-> V
+```
+
 ## Componentes
 
 - `SolaraIndexProtocol`: bóveda principal de mint, redeem, rebalance y salidas de
@@ -22,6 +35,8 @@ y verificable.
 - `SolaraPriceOracle`: precios administrados a 18 decimales con heartbeat y
   rangos permitidos.
 - `RebalancePlanner`: módulo de lectura para estimar deltas de rebalance.
+- `RebalancePlanner.executionBounds`: cantidad nominal y banda de ejecución
+  en unidades del componente a partir de valor y tolerancia de deslizamiento.
 - `EmergencyExitModule`: módulo de cotización para salidas de emergencia.
 - `SolaraIndexLens` y `SolaraAccountLens`: vistas agregadas de NAV, pesos,
   claims y cuentas.
@@ -41,6 +56,11 @@ y verificable.
    hacia la composición definida por la política del índice.
 6. Las salidas de emergencia y el circuit breaker reducen el impacto de
    condiciones operativas anómalas.
+
+El valor objetivo de un componente se obtiene con `valorCartera × pesoObjetivo / 10 000`.
+El planner convierte el delta de valor a unidades nativas usando precio y decimales. Por ejemplo,
+un delta de `2 000` unidades monetarias en WETH cotizado a `2 000` equivale a `1 WETH`;
+con tolerancia de `100 bps`, la banda operativa es `0,99–1,01 WETH`.
 
 ## Seguridad y controles
 
@@ -68,15 +88,10 @@ forge build
 forge test -vvv
 ```
 
-PowerShell:
-
-```powershell
-powershell -ExecutionPolicy Bypass -File ./scripts/tests.ps1
-```
-
-Bash:
+El gate completo y la suite individual:
 
 ```bash
+bash scripts/ci.sh
 bash scripts/tests.sh
 ```
 
@@ -107,3 +122,14 @@ forge build
 forge test -vvv
 forge test --match-test testName -vvvv
 ```
+
+## Documentación
+
+- [Arquitectura y estados](./docs/arquitectura.md)
+- [Economía del índice](./docs/modelo-economico.md)
+- [Integración y cotizaciones](./docs/integracion.md)
+- [Operación y seguridad](./docs/operacion.md)
+
+La versión `v1.0.0` identifica un estado de repositorio verificable por CI.
+La rama `production` y el tag anotado deben coincidir con `main`. Esto no
+acredita un despliegue en red pública ni custodia de activos externos.

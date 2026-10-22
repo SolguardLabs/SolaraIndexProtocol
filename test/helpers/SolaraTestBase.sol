@@ -19,7 +19,7 @@ abstract contract SolaraTestBase is Test {
 
     address internal alice;
     address internal bob;
-    address internal attacker;
+    address internal carol;
     address internal treasury;
     address internal keeper;
 
@@ -38,7 +38,7 @@ abstract contract SolaraTestBase is Test {
     function setUp() public virtual {
         alice = makeAddr("alice");
         bob = makeAddr("bob");
-        attacker = makeAddr("attacker");
+        carol = makeAddr("carol");
         treasury = makeAddr("treasury");
         keeper = makeAddr("keeper");
 
@@ -107,7 +107,7 @@ abstract contract SolaraTestBase is Test {
 
         _fundAndApprove(alice);
         _fundAndApprove(bob);
-        _fundAndApprove(attacker);
+        _fundAndApprove(carol);
         _fundAndApprove(keeper);
     }
 

@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.24;
 
+import { RebalancePlanner } from "../src/modules/RebalancePlanner.sol";
 import {
     AssetAmount,
     Component,
@@ -11,6 +12,15 @@ import {
 import { SolaraTestBase } from "./helpers/SolaraTestBase.sol";
 
 contract SolaraLifecycleTest is SolaraTestBase {
+    function testPlannerQuotesExecutionBoundsInTokenUnits() public {
+        RebalancePlanner planner = new RebalancePlanner(registry, oracle, address(protocol));
+        (uint256 nominal, uint256 minimumReceive, uint256 maximumSpend) =
+            planner.executionBounds(address(weth), 2000 ether, 100);
+        assertEq(nominal, 1 ether);
+        assertEq(minimumReceive, 0.99 ether);
+        assertEq(maximumSpend, 1.01 ether);
+    }
+
     function testMintPullsWeightedBasketAndMintsIndex() public {
         uint256 mintAmount = 1000 ether;
         uint256 aliceUsdcBefore = usdc.balanceOf(alice);
